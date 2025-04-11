@@ -7,12 +7,15 @@ import {
     Text,
     TouchableOpacity,
     View
-} from "react-native";
+}
+from "react-native";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import ScrollView = Animated.ScrollView;
 import {useState} from "react";
 import FormField from "@/components/FormField";
 import {useRouter} from "expo-router";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = () => {
 
@@ -23,10 +26,25 @@ const LoginScreen = () => {
         setForm({ ...form, [field]: value });
     };
 
-    const handleSignIp = () => {
+    const handleSignIp = async () => {
         console.log("Вхід:", form);
-        // Тут можна додати логіку реєстрації
+        try {
+            const resp = await axios.post("https://pv212api.itstep.click/api/account/login", form);
+            const { data } = resp;
+            console.log("data", data);
+
+            // Зберігаємо токен у AsyncStorage
+            await AsyncStorage.setItem("token", data.token);
+
+            setForm({ email: "", password: "" });
+
+            // Перенаправляємо до профілю, передаючи токен
+            router.replace("/profile");
+        } catch (error) {
+            console.error("Error login server", error);
+        }
     };
+
 
     return (
         <SafeAreaProvider>
