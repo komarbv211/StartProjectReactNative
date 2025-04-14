@@ -6,45 +6,54 @@ import {
     SafeAreaView,
     Text,
     TouchableOpacity,
-    View
-}
-from "react-native";
+    View,
+    Alert
+} from "react-native";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import ScrollView = Animated.ScrollView;
 import {useState} from "react";
 import FormField from "@/components/FormField";
 import {useRouter} from "expo-router";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useLoginMutation} from "@/services/accountService";
+import * as SecureStore from 'expo-secure-store';
+import {setCredentials} from "@/store/slices/userSlice";
+import {useAppDispatch} from "@/store";
+import { useSelector } from "react-redux";
+import { getAuth } from "@/store/slices/userSlice";
 
 const LoginScreen = () => {
-
-    const router = useRouter(); // Ініціалізуємо роутер
+    const router = useRouter();
+    const dispatch = useAppDispatch(); // Використовуємо dispatch з Redux
     const [form, setForm] = useState({ email: "", password: "" });
+
+    const [login, { isLoading }] = useLoginMutation()
 
     const handleChange = (field: string, value: string) => {
         setForm({ ...form, [field]: value });
     };
+    const auth = useSelector(getAuth);
 
-    const handleSignIp = async () => {
-        console.log("Вхід:", form);
+    const handleSignIn = async () => {
         try {
-            const resp = await axios.post("https://pv212api.itstep.click/api/account/login", form);
-            const { data } = resp;
-            console.log("data", data);
+            if (auth.isAuth) {
+                router.replace("/(auth)/profile");
+            }
+            const res = await login({ ...form }).unwrap();
+            // Зберігаємо токен в SecureStore
+            await SecureStore.setItemAsync("token", res.token);
 
-            // Зберігаємо токен у AsyncStorage
-            await AsyncStorage.setItem("token", data.token);
+            // Викликаємо dispatch для оновлення стану через setCredentials
+            dispatch(setCredentials({ token: res.token }));
 
             setForm({ email: "", password: "" });
 
-            // Перенаправляємо до профілю, передаючи токен
-            router.replace("/profile");
+            // Перенаправляємо користувача на сторінку профілю
+            router.replace("/(auth)/profile");
         } catch (error) {
             console.error("Error login server", error);
+            Alert.alert("Помилка", "Не вдалося увійти. Перевірте дані.");
         }
     };
-
 
     return (
         <SafeAreaProvider>
@@ -84,7 +93,7 @@ const LoginScreen = () => {
                             />
                             {/* Кнопка "Реєстрація" */}
                             <TouchableOpacity
-                                onPress={handleSignIp}
+                                onPress={handleSignIn}
                                 className="w-full bg-blue-500 p-4 rounded-lg mt-4"
                             >
                                 <Text className="text-white text-center text-lg font-bold">
@@ -94,7 +103,7 @@ const LoginScreen = () => {
 
                             {/* Кнопка "Реєстрація" */}
                             <TouchableOpacity
-                                onPress={() => router.replace("/register")}
+                                onPress={() => router.replace("/explore")}
                                 className="w-full bg-gray-300 p-4 rounded-lg mt-2"
                             >
                                 <Text className="text-black text-center text-lg font-medium">

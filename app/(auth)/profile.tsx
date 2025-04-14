@@ -1,42 +1,35 @@
-import { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Імпортуємо AsyncStorage
-import {jwtDecode} from "jwt-decode"; // Імпортуємо jwtDecode
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {useRouter} from "expo-router";
+import { logOut} from "@/store/slices/userSlice";
+import {useAppDispatch, useAppSelector} from "@/store";
 
-// Оголошуємо інтерфейс для типізації користувача
-interface UserInfo {
-    email: string;
-    name: string;
-    roles: string;
-}
 
 const ProfileScreen = () => {
-    // Типізуємо userInfo як UserInfo або null, якщо ще не отримано дані
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const dispatch = useAppDispatch();
+    const router = useRouter();
 
-    useEffect(() => {
-        const getToken = async () => {
-            try {
-                const token = await AsyncStorage.getItem("token");
-                if (token) {
-                    const decoded = jwtDecode<UserInfo>(token); // Розшифровуємо токен і типізуємо
-                    setUserInfo(decoded); // Оновлюємо стан з інформацією про користувача
-                }
-            } catch (error) {
-                console.error("Не вдалося отримати токен", error);
-            }
-        };
-        getToken();
-    }, []);
+    const user = useAppSelector((state) => state.user.user);
+
+    const handleLogout = () => {
+        dispatch(logOut());
+        router.replace("/login");
+    };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Інформація про користувача:</Text>
-            {userInfo ? (
+            {user ? (
                 <>
-                    <Text>Email: {userInfo.email}</Text>
-                    <Text>Ім’я: {userInfo.name}</Text>
-                    <Text>Роль: {userInfo.roles}</Text>
+                    <Text>Email: {user.email}</Text>
+                    <Text>Ім’я: {user.name}</Text>
+                    <Text>Роль: {user.roles.join(', ')}</Text>
+
+                    <TouchableOpacity
+                        onPress={handleLogout}
+                        style={styles.logoutButton}
+                    >
+                        <Text style={styles.logoutText}>Вийти</Text>
+                    </TouchableOpacity>
                 </>
             ) : (
                 <Text>Завантаження даних...</Text>
@@ -48,6 +41,14 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
     container: { flex: 1, justifyContent: "center", padding: 20 },
     title: { fontSize: 20, marginBottom: 15, fontWeight: "bold" },
+    logoutButton: {
+        marginTop: 30,
+        padding: 12,
+        backgroundColor: "#ff4d4d",
+        borderRadius: 8,
+        alignItems: "center",
+    },
+    logoutText: { color: "white", fontWeight: "bold" },
 });
 
 export default ProfileScreen;
