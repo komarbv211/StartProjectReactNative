@@ -6,8 +6,7 @@ import {
     SafeAreaView,
     Text,
     TouchableOpacity,
-    View,
-    Alert
+    View
 } from "react-native";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import ScrollView = Animated.ScrollView;
@@ -15,44 +14,42 @@ import {useState} from "react";
 import FormField from "@/components/FormField";
 import {useRouter} from "expo-router";
 import {useLoginMutation} from "@/services/accountService";
-import * as SecureStore from 'expo-secure-store';
-import {setCredentials} from "@/store/slices/userSlice";
 import {useAppDispatch} from "@/store";
-import { useSelector } from "react-redux";
-import { getAuth } from "@/store/slices/userSlice";
+import { setCredentials} from "@/store/slices/userSlice";
+import {saveToSecureStore} from "@/utils/secureStore";
+import {jwtParse} from "@/utils/jwtParse";
+import {IUser} from "@/interfaces/account";
 
 const LoginScreen = () => {
-    const router = useRouter();
-    const dispatch = useAppDispatch(); // Використовуємо dispatch з Redux
+
+    const router = useRouter(); // Ініціалізуємо роутер
     const [form, setForm] = useState({ email: "", password: "" });
 
     const [login, { isLoading }] = useLoginMutation()
 
+    const dispatch = useAppDispatch(); // Використовуємо dispatch з Redux
+
     const handleChange = (field: string, value: string) => {
         setForm({ ...form, [field]: value });
     };
-    const auth = useSelector(getAuth);
-
-    const handleSignIn = async () => {
+    const handleSignIp = async () => {
+        console.log("Вхід:", form);
         try {
-            if (auth.isAuth) {
-                router.replace("/(auth)/profile");
-            }
-            const res = await login({ ...form }).unwrap();
-            // Зберігаємо токен в SecureStore
-            await SecureStore.setItemAsync("token", res.token);
+            const res = await login({ ...form }).unwrap()
+           console.log("data", res)
 
-            // Викликаємо dispatch для оновлення стану через setCredentials
-            dispatch(setCredentials({ token: res.token }));
+            await saveToSecureStore('authToken', res.token)
+            dispatch(setCredentials({ user: jwtParse(res.token) as IUser, token: res.token }))
 
             setForm({ email: "", password: "" });
 
             // Перенаправляємо користувача на сторінку профілю
             router.replace("/(auth)/profile");
-        } catch (error) {
-            console.error("Error login server", error);
-            Alert.alert("Помилка", "Не вдалося увійти. Перевірте дані.");
         }
+        catch (error) {
+            console.error("Error login server", error);
+        }
+        // Тут можна додати логіку реєстрації
     };
 
     return (
@@ -93,7 +90,7 @@ const LoginScreen = () => {
                             />
                             {/* Кнопка "Реєстрація" */}
                             <TouchableOpacity
-                                onPress={handleSignIn}
+                                onPress={handleSignIp}
                                 className="w-full bg-blue-500 p-4 rounded-lg mt-4"
                             >
                                 <Text className="text-white text-center text-lg font-bold">

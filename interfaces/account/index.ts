@@ -22,21 +22,15 @@ export interface IUserCreate {
 export interface ILoginResponse {
     token: string
 }
+
 export interface IUserInfo {
     email: string;
     name: string;
     roles: string[];
 }
-//Авторизований користувач у системі
-export interface IUserAuth {
-    isAdmin: boolean
-    isUser: boolean
-    isAuth: boolean,
-    roles: string[]
-}
+
 //Повна інформація про користувача
 export interface IUserState {
-    user: IUserInfo  | null
-    auth: IUserAuth
+    user: IUser | null
     token: string | null
 }

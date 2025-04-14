@@ -21,8 +21,8 @@ const ProfileScreen = () => {
             {user ? (
                 <>
                     <Text>Email: {user.email}</Text>
-                    <Text>Ім’я: {user.name}</Text>
-                    <Text>Роль: {user.roles.join(', ')}</Text>
+                    {/*<Text>Ім’я: {user.name}</Text>*/}
+                    {/*<Text>Роль: {user.roles.join(', ')}</Text>*/}
 
                     <TouchableOpacity
                         onPress={handleLogout}
