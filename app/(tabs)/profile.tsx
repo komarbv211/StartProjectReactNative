@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import {useRouter} from "expo-router";
 import { logOut} from "@/store/slices/userSlice";
 import {useAppDispatch, useAppSelector} from "@/store";
+import AppLogo from "@/components/AppLogo";
+import {removeFromSecureStore} from "@/utils/secureStore";
 
 
 const ProfileScreen = () => {
@@ -10,13 +12,17 @@ const ProfileScreen = () => {
 
     const user = useAppSelector((state) => state.user.user);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await removeFromSecureStore("authToken");
+
         dispatch(logOut());
         router.replace("/login");
     };
 
     return (
         <View style={styles.container}>
+            <AppLogo />
+
             <Text style={styles.title}>Інформація про користувача:</Text>
             {user ? (
                 <>

@@ -15,10 +15,11 @@ import FormField from "@/components/FormField";
 import {useRouter} from "expo-router";
 import {useLoginMutation} from "@/services/accountService";
 import {useAppDispatch} from "@/store";
-import { setCredentials} from "@/store/slices/userSlice";
+import {setCredentials} from "@/store/slices/userSlice";
 import {saveToSecureStore} from "@/utils/secureStore";
 import {jwtParse} from "@/utils/jwtParse";
 import {IUser} from "@/interfaces/account";
+
 
 const LoginScreen = () => {
 
@@ -32,11 +33,17 @@ const LoginScreen = () => {
     const handleChange = (field: string, value: string) => {
         setForm({ ...form, [field]: value });
     };
+
+
     const handleSignIp = async () => {
         console.log("Вхід:", form);
         try {
+
             const res = await login({ ...form }).unwrap()
-           console.log("data", res)
+            // console.log("Result", resp);
+            //const {data} = res;
+            console.log("data", res)
+
 
             await saveToSecureStore('authToken', res.token)
             dispatch(setCredentials({ user: jwtParse(res.token) as IUser, token: res.token }))
@@ -44,11 +51,13 @@ const LoginScreen = () => {
             setForm({ email: "", password: "" });
 
             // Перенаправляємо користувача на сторінку профілю
-            router.replace("/(auth)/profile");
+            router.replace("/profile");
+
         }
         catch (error) {
             console.error("Error login server", error);
         }
+
         // Тут можна додати логіку реєстрації
     };
 

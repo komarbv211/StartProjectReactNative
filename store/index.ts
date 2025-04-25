@@ -3,7 +3,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { accountApi } from '@/services/accountService'
 import authReducer from './slices/userSlice';
 
-export const index = configureStore({
+export const store = configureStore({
     reducer: {
         user: authReducer,
         [accountApi.reducerPath]: accountApi.reducer,
@@ -13,8 +13,8 @@ export const index = configureStore({
             .concat(accountApi.middleware), // Додаємо API middleware
 });
 
-export type RootState = ReturnType<typeof index.getState>;
-export type AppDispatch = typeof index.dispatch;
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 
 export const useAppDispatch: () => AppDispatch = useDispatch
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector

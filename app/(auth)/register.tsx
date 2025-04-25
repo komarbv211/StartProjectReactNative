@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
     Animated,
     Dimensions,
@@ -6,33 +7,85 @@ import {
     SafeAreaView,
     Text,
     TouchableOpacity,
-    View
+    View,
+    Image
 } from "react-native";
-import {SafeAreaProvider} from "react-native-safe-area-context";
+import * as ImagePicker from 'expo-image-picker';
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import ScrollView = Animated.ScrollView;
-import {useState} from "react";
+import { useRouter } from "expo-router";
 import FormField from "@/components/FormField";
-import {useRouter} from "expo-router";
+import { useRegisterMutation } from "@/services/accountService";
 
 const RegisterScreen = () => {
-    const router = useRouter(); // Ініціалізуємо роутер для навігації між сторінками
+    const router = useRouter();
+    const [form, setForm] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+    });
 
-    // Стан для збереження введених користувачем даних
-    const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
 
-    // Функція для оновлення стану полів форми
+    const [image, setImage] = useState<string | null>(null);
+    const [register, { isLoading }] = useRegisterMutation();
+
     const handleChange = (field: string, value: string) => {
         setForm({ ...form, [field]: value });
     };
 
-    // Функція для обробки натискання кнопки реєстрації
-    const handleSignUp = () => {
-        if (form.password !== form.confirmPassword) {
-            console.log("Помилка: Паролі не співпадають");
+    const pickImage = async () => {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            alert("Потрібен доступ до галереї!");
             return;
         }
-        console.log("Реєстрація:", form);
-        // Тут можна додати логіку реєстрації, наприклад, відправку даних на сервер
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets.length > 0) {
+            setImage(result.assets[0].uri);
+        }
+    };
+
+    const handleSignUp = async () => {
+        if (form.password !== form.confirmPassword) {
+            alert("Паролі не співпадають");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("FirstName", form.firstName);
+        formData.append("LastName", form.lastName);
+        formData.append("Email", form.email);
+        formData.append("Password", form.password)
+
+        if (image) {
+            const filename = image.split('/').pop()!;
+            const match = /\.(\w+)$/.exec(filename);
+            const ext = match?.[1];
+            const mimeType = `image/${ext}`;
+
+            formData.append("Image", {
+                uri: image,
+                name: filename,
+                type: mimeType,
+            } as any);
+        }
+
+        try {
+            const res = await register(formData).unwrap();
+            console.log("Користувача зареєстровано:", res);
+            router.replace("/login");
+        } catch (error) {
+            console.error("Помилка реєстрації", error);
+        }
     };
 
     return (
@@ -43,55 +96,62 @@ const RegisterScreen = () => {
                     className="flex-1"
                 >
                     <ScrollView
-                        contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20}}
+                        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20 }}
                         keyboardShouldPersistTaps="handled"
                     >
                         <View
                             className="w-full flex justify-center items-center my-6"
-                            style={{
-                                minHeight: Dimensions.get("window").height - 100, // Мінімальна висота екрану
-                            }}
+                            style={{ minHeight: Dimensions.get("window").height - 100 }}
                         >
-                            <Text className={"text-3xl font-bold mb-6 text-black"}>
-                                Реєстрація
-                            </Text>
-
-                            {/* Поле введення імені */}
+                            <Text className="text-3xl font-bold mb-6 text-black">Реєстрація</Text>
                             <FormField
-                                title={"Ім'я"}
-                                value={form.name}
-                                handleChangeText={(value: string) => handleChange("name", value)}
-                                placeholder={"Вкажіть ім'я"}
+                                title="Ім'я"
+                                value={form.firstName}
+                                handleChangeText={(value) => handleChange("firstName", value)}
+                                placeholder="Вкажіть ім'я"
                             />
-
-                            {/* Поле введення електронної пошти */}
                             <FormField
-                                title={"Пошта"}
+                                title="Прізвище"
+                                value={form.lastName}
+                                handleChangeText={(value) => handleChange("lastName", value)}
+                                placeholder="Вкажіть прізвище"
+                            />
+                            <FormField
+                                title="Пошта"
                                 value={form.email}
-                                handleChangeText={(value: string) => handleChange("email", value)}
-                                placeholder={"Вкажіть пошту"}
+                                handleChangeText={(value) => handleChange("email", value)}
+                                placeholder="Вкажіть пошту"
                                 keyboardType="email-address"
                             />
-
-                            {/* Поле введення пароля */}
                             <FormField
-                                title={"Пароль"}
+                                title="Пароль"
                                 value={form.password}
-                                handleChangeText={(value: string) => handleChange("password", value)}
-                                placeholder={"Вкажіть пароль"}
-                                secureTextEntry={true} // Приховуємо введений пароль
+                                handleChangeText={(value) => handleChange("password", value)}
+                                placeholder="Вкажіть пароль"
+                                secureTextEntry={true}
                             />
-
-                            {/* Поле підтвердження пароля */}
                             <FormField
-                                title={"Підтвердьте пароль"}
+                                title="Підтвердьте пароль"
                                 value={form.confirmPassword}
-                                handleChangeText={(value: string) => handleChange("confirmPassword", value)}
-                                placeholder={"Повторіть пароль"}
-                                secureTextEntry={true} // Приховуємо введений пароль
+                                handleChangeText={(value) => handleChange("confirmPassword", value)}
+                                placeholder="Повторіть пароль"
+                                secureTextEntry={true}
                             />
 
-                            {/* Кнопка реєстрації */}
+                            <TouchableOpacity
+                                onPress={pickImage}
+                                className="w-full bg-indigo-300 p-3 rounded-lg mt-4"
+                            >
+                                <Text className="text-center text-white font-bold">Обрати фото</Text>
+                            </TouchableOpacity>
+
+                            {image && (
+                                <Image
+                                    source={{ uri: image }}
+                                    style={{ width: 100, height: 100, borderRadius: 50, marginTop: 10 }}
+                                />
+                            )}
+
                             <TouchableOpacity
                                 onPress={handleSignUp}
                                 className="w-full bg-blue-500 p-4 rounded-lg mt-4"
@@ -101,7 +161,6 @@ const RegisterScreen = () => {
                                 </Text>
                             </TouchableOpacity>
 
-                            {/* Кнопка переходу на сторінку входу */}
                             <TouchableOpacity
                                 onPress={() => router.replace("/login")}
                                 className="w-full bg-gray-300 p-4 rounded-lg mt-2"
