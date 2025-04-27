@@ -109,7 +109,7 @@ const LoginScreen = () => {
 
                             {/* Кнопка "Реєстрація" */}
                             <TouchableOpacity
-                                onPress={() => router.replace("/explore")}
+                                onPress={() => router.replace("/register")}
                                 className="w-full bg-gray-300 p-4 rounded-lg mt-2"
                             >
                                 <Text className="text-black text-center text-lg font-medium">

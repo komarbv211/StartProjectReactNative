@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image  } from "react-native";
 import {useRouter} from "expo-router";
 import { logOut} from "@/store/slices/userSlice";
 import {useAppDispatch, useAppSelector} from "@/store";
 import AppLogo from "@/components/AppLogo";
 import {removeFromSecureStore} from "@/utils/secureStore";
+import {BASE_URL} from "@/constants/Urls";
 
 
 const ProfileScreen = () => {
@@ -27,8 +28,15 @@ const ProfileScreen = () => {
             {user ? (
                 <>
                     <Text>Email: {user.email}</Text>
-                    {/*<Text>Ім’я: {user.name}</Text>*/}
-                    {/*<Text>Роль: {user.roles.join(', ')}</Text>*/}
+                    <Text>Ім’я: {user.firstName}</Text>
+                    <Text>Прізвище: {user.lastName}</Text>
+                    <Text>Роль: {user.roles}</Text>
+                    {user.image && (
+                        <Image
+                            source={{uri: `${BASE_URL}/images/100_${user.image}`}}
+                            style={styles.userImage}
+                        />
+                    )}
 
                     <TouchableOpacity
                         onPress={handleLogout}
@@ -55,6 +63,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logoutText: { color: "white", fontWeight: "bold" },
+    userImage: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        marginTop: 20,
+        alignSelf: "center",
+    },
 });
+
 
 export default ProfileScreen;
