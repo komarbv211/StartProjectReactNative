@@ -47,15 +47,6 @@ export default function AuthLayout() {
                     tabBarIcon: ({color}) => <IconSymbol size={28} name="person.badge.plus" color={color}/>,
                 }}
             />
-
-            <Tabs.Screen
-                name="explore"
-                options={{
-                    title: 'explore',
-                    tabBarIcon: ({color}) => <IconSymbol size={28} name="person.badge.plus" color={color} />,
-                }}
-            />
-
         </Tabs>
     );
 }

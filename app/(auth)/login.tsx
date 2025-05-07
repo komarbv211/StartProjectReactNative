@@ -19,6 +19,7 @@ import {setCredentials} from "@/store/slices/userSlice";
 import {saveToSecureStore} from "@/utils/secureStore";
 import {jwtParse} from "@/utils/jwtParse";
 import {IUser} from "@/interfaces/account";
+import LoadingOverlay from "@/components/LoadingOverlay";
 
 
 const LoginScreen = () => {
@@ -72,6 +73,8 @@ const LoginScreen = () => {
                         contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20}}
                         keyboardShouldPersistTaps="handled"
                     >
+                        <LoadingOverlay visible={isLoading} />
+
                         <View
                             className="w-full flex justify-center items-center my-6"
                             style={{
