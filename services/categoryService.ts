@@ -1,6 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react'
-import { createBaseQuery } from '@/utils/createBaseQuery'
-import {ICategoryItem} from "@/interfaces/category";
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from '@/utils/createBaseQuery';
+import { ICategoryItem, ICategoryCreate, ICategoryEdit } from "@/interfaces/category";
 
 export const categoryApi = createApi({
     reducerPath: 'categoryApi',
@@ -8,19 +8,42 @@ export const categoryApi = createApi({
     tagTypes: ['Categories'],
 
     endpoints: (builder) => ({
-        getCategories: builder.query<ICategoryItem[], string|null>({
-            query: (token: string|null) => {
-                console.log("token", token);
-                return {
-                    url: '',
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    }
-                }
-            },
+        getCategories: builder.query<ICategoryItem[], void>({
+            query: () => '',
+            providesTags: ['Categories'],
+        }),
+
+        createCategory: builder.mutation<ICategoryCreate, FormData>({
+            query: (formData) => ({
+                url: '',
+                method: 'POST',
+                body: formData,
+            }),
+            invalidatesTags: ['Categories'],
+        }),
+
+        editCategory: builder.mutation ({
+            query: (FormData) => ({
+                url: '',
+                method: 'PUT',
+                body: FormData,
+            }),
+            invalidatesTags: ['Categories'],
+        }),
+
+        deleteCategory: builder.mutation<void, number>({
+            query: (id) => ({
+                url: `${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Categories'],
         }),
     }),
-})
+});
 
-export const { useGetCategoriesQuery } = categoryApi
+export const {
+    useGetCategoriesQuery,
+    useCreateCategoryMutation,
+    useEditCategoryMutation,
+    useDeleteCategoryMutation
+} = categoryApi;

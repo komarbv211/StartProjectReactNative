@@ -1,19 +1,14 @@
 import {View, Text, StyleSheet, TouchableOpacity, FlatList} from "react-native";
-import {useRouter} from "expo-router";
-import {useAppDispatch, useAppSelector} from "@/store";
+import {router, useRouter} from "expo-router";
+import {useGetCategoriesQuery} from "@/services/categoryService";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import CategoryCard from "@/components/category/CategoryCard";
-import {useGetCategoriesQuery} from "@/services/categoryService";
 
 
 const CategoriesScreen = () => {
-    const dispatch = useAppDispatch();
-    const router = useRouter();
-
-    const token = useAppSelector((state) => state.user.token);
 
 
-    const {data: categories, isLoading, error} = useGetCategoriesQuery(token);
+    const {data: categories, isLoading, error} = useGetCategoriesQuery();
 
     console.log("data", categories);
     console.log("error", error);
@@ -22,6 +17,19 @@ const CategoriesScreen = () => {
         <View>
             <Text style={styles.title}>Категорії</Text>
             <LoadingOverlay visible={isLoading} />
+            <TouchableOpacity
+                style={{
+                    backgroundColor: "#4f46e5",
+                    padding: 12,
+                    borderRadius: 8,
+                    marginHorizontal: 20,
+                    marginBottom: 10,
+                }}
+                onPress={() => router.replace("/create-category")}
+            >
+                <Text style={{ color: "#fff", textAlign: "center", fontWeight: "bold" }}>+ Додати категорію</Text>
+            </TouchableOpacity>
+
             {categories && (
                 <FlatList
                     data={categories}
