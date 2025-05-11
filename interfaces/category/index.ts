@@ -1,7 +1,7 @@
 export interface ICategoryItem {
     "id": number,
     "name": string,
-    "image": string | null,
+    "image"?: string | null,
     "description": string,
     "userId": number
 }

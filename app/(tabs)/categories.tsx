@@ -25,7 +25,7 @@ const CategoriesScreen = () => {
                     marginHorizontal: 20,
                     marginBottom: 10,
                 }}
-                onPress={() => router.replace("/create-category")}
+                onPress={() => router.replace("/create-update-category")}
             >
                 <Text style={{ color: "#fff", textAlign: "center", fontWeight: "bold" }}>+ Додати категорію</Text>
             </TouchableOpacity>

@@ -22,7 +22,7 @@ export const categoryApi = createApi({
             invalidatesTags: ['Categories'],
         }),
 
-        editCategory: builder.mutation ({
+        editCategory: builder.mutation <ICategoryEdit, FormData>({
             query: (FormData) => ({
                 url: '',
                 method: 'PUT',
